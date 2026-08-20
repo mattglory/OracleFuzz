@@ -76,7 +76,7 @@ through forge-std's `deployCode`, then driven entirely through low-level ABI cal
 and useful on its own for anyone trying to point modern fuzzing tooling at an
 older Compound-fork-style codebase.
 
-## M2 in progress: FDC chaos-mock
+## M2: FDC chaos-mock
 
 - `src/mocks/FdcVerificationChaosMock.sol` — implements the real
   `IWeb2JsonVerification` and `IPaymentVerification` interfaces (vendored
@@ -94,18 +94,28 @@ older Compound-fork-style codebase.
   PaymentCreditor_Buggy_InvariantTest    [FAIL]  shrunk to: warp(huge) -> queryCreditor(...)
   ```
 
-Still open for M2: the remaining FDC attestation-failure modes beyond the two
-implemented here, and a second worked example.
+- `test/examples/Web2JsonDataConsumer.sol` / `Web2JsonDataConsumerBuggy.sol` —
+  the second worked example, against `IWeb2JsonVerification`. FDC verification
+  is stateless (no persistent "current attestation" the way FTSO has), so a
+  cryptographically valid proof from an OLD round is just as verifiable as a
+  fresh one - the "wrong round" failure mode. The buggy version checks
+  verification but never checks round recency, so an old-but-valid proof can be
+  replayed to roll accepted state backward:
+
+  ```
+  Web2JsonDataConsumer_Correct_InvariantTest  [PASS]  (runs: 500, calls: 25000, reverts: 0)
+  Web2JsonDataConsumer_Buggy_InvariantTest    [FAIL]  shrunk to a 2-call replay
+  ```
 
 ## Roadmap
 
 - **M1 (complete):** FTSO chaos-mock + invariant-template pattern, proven against
   a worked example, and against a real, live Flare protocol (Kinetic Market's
   `ProtocolFTSOV3Oracle` - see above).
-- **M2 (in progress):** FDC chaos-mock covering `IWeb2JsonVerification` and
-  `IPaymentVerification`, proven against a worked example (above). Remaining:
-  broader failure-mode coverage (malformed-proof and forced-revert are done;
-  wrong-round handling is next) and a second worked example.
+- **M2 (complete):** FDC chaos-mock covering `IWeb2JsonVerification` and
+  `IPaymentVerification`, with two worked examples covering both attestation-
+  freshness failure modes named in the original scope: stale attestation window
+  (`PaymentCreditor`) and wrong round / replay (`Web2JsonDataConsumer`).
 - **M3:** Publish as a proper `forge install`-able package, worked integration
   against a second, more realistic example (a small lending or perps primitive),
   and documentation aimed at existing Flare ecosystem teams (SparkDEX, Kinetic,
