@@ -1,1 +1,20 @@
-{}
+{
+  "lib/flare-foundry-periphery-package": {
+    "tag": {
+      "name": "0.1.52",
+      "rev": "ca264d6a31ddfb53d1bef7cb7bd1942aa89d323a"
+    }
+  },
+  "lib/openzeppelin-contracts": {
+    "tag": {
+      "name": "v4.9.2",
+      "rev": "e50c24f5839db17f46991478384bfda14acfb830"
+    }
+  },
+  "lib/perp-smart-contracts": {
+    "rev": "f450d5dd849e5070b6ced429378cbbd545b6aca2"
+  },
+  "lib/public-money-market-contracts": {
+    "rev": "a8f0a3d780801a7b45db241723ae46b829b67fa6"
+  }
+}

@@ -1,2 +1,5 @@
 forge-std/=lib/forge-std/src/
 kinetic/=lib/public-money-market-contracts/contracts/
+sparkdex/=lib/perp-smart-contracts/contracts/
+@flarenetwork/flare-periphery-contracts/=lib/flare-periphery-contracts-0.1.16/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/

@@ -107,6 +107,40 @@ older Compound-fork-style codebase.
   Web2JsonDataConsumer_Buggy_InvariantTest    [FAIL]  shrunk to a 2-call replay
   ```
 
+## Proven against a second real, live Flare protocol: SparkDEX
+
+`test/integration/sparkdex/` points the same approach at
+[SparkDEX's `FTSOv2.sol`](https://github.com/SparkDEX/perp-smart-contracts/blob/main/contracts/utils/FTSOv2.sol)
+utility contract - installed unmodified via `forge install`. SparkDEX is a
+past Flare Grants Program recipient, so this is a real result against a
+prominent ecosystem team, not just a smaller protocol.
+
+Structurally different from the Kinetic integration: SparkDEX's `FTSOv2`
+resolves its oracle dependencies internally at construction time via Flare's
+live, on-chain `ContractRegistry` (a fixed mainnet address), rather than
+taking them as a constructor argument. That can't be swapped for a mock before
+deployment without forking real chain state, so this test forks Flare mainnet,
+deploys the real contract against the real registry, and uses Foundry's
+`vm.mockCall` to chaos-inject the specific oracle call it makes - a second,
+complementary technique to M1/M2's drop-in mock contracts, useful for any
+protocol wired up via the registry pattern instead of constructor injection.
+
+```
+SparkDex_FTSOv2_InvariantTest    [PASS]  invariant_NeverAcceptsInvalidOrStalePrice()
+                                           (runs: 50, calls: 1000, reverts: 0)
+SparkDex_FTSOv2_DiagnosticTest   [PASS]  fresh price computed correctly,
+                                           StaleRate() and InvalidPrice() both
+                                           genuinely triggered (not vacuous)
+```
+
+Run count is lower here (50/1000 vs. 500/25000 elsewhere) - against a forked
+live chain, Foundry's invariant fuzzer uses a fresh random sender per call by
+default, and each one needs a real account lookup against the fork's RPC,
+which exhausts the public endpoint's rate limit fast. Fixed via
+`targetSender()` restricting to one known sender - the property under test is
+about the fuzzed price/staleness data, not the caller, so this costs nothing
+real, but it does mean fewer total calls than the non-forked examples.
+
 ## Roadmap
 
 - **M1 (complete):** FTSO chaos-mock + invariant-template pattern, proven against

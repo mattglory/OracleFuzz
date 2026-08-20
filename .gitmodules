@@ -1,3 +1,9 @@
 [submodule "lib/public-money-market-contracts"]
 	path = lib/public-money-market-contracts
 	url = https://github.com/kinetic-market/public-money-market-contracts
+[submodule "lib/perp-smart-contracts"]
+	path = lib/perp-smart-contracts
+	url = https://github.com/SparkDEX/perp-smart-contracts
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
