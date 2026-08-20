@@ -3,4 +3,5 @@ cache/
 broadcast/
 .env
 GRANT_APPLICATION_DRAFT.md
+GRANT_UPDATE_DRAFT.md
 *.pdf
