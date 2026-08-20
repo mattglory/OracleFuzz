@@ -45,6 +45,37 @@ infrastructure other builders can `forge install` and extend.
   The buggy contract's failure is *expected* — it's the proof the harness works.
   Foundry's shrinker reduces the failing sequence to two calls automatically.
 
+## Proven against a real, live Flare protocol
+
+Not just the toy example above. `test/integration/kinetic/` points the same
+chaos-injection approach at [Kinetic Market's `ProtocolFTSOV3Oracle`](https://github.com/kinetic-market/public-money-market-contracts/blob/main/contracts/FTSO/ProtocolFTSOV3Oracle.sol) -
+the actual FTSO price oracle a live Flare money market uses to value collateral -
+installed unmodified as a `forge install` dependency, not copied or rewritten.
+
+```
+Kinetic_FTSOV3Oracle_InvariantTest    [PASS]  invariant_NeverReturnsStalePrice()
+                                                (runs: 500, calls: 25000, reverts: 0)
+Kinetic_FTSOV3Oracle_DiagnosticTest   [PASS]  test_HappyPathReturnsRealPrice()
+                                                (fresh price computed correctly: 1e18)
+Kinetic_FTSOV3Oracle_DiagnosticTest   [PASS]  test_StalePriceReverts()
+                                                (reverts with the real "stale price" reason string)
+```
+
+25,000 fuzzed calls across price updates, staleness injection, and time warps found
+Kinetic's staleness guard holds - it's a genuine, useful validation of live ecosystem
+code, not a hypothetical. (The two diagnostic tests exist to rule out a vacuous
+pass: they confirm the harness actually reaches both a real successful price read
+*and* a real staleness-triggered revert, not every call silently failing.)
+
+Kinetic's contract is pinned to `pragma solidity 0.5.17`; this repo's own code is
+`>=0.8.19`. The two can't share a single `solc` invocation, so the old contract is
+compiled into its own artifact (via a same-version anchor import,
+`test/integration/kinetic/_CompileTarget.sol`) and deployed into the 0.8.x test
+through forge-std's `deployCode`, then driven entirely through low-level ABI calls
+- the standard Foundry pattern for testing across incompatible pragma versions,
+and useful on its own for anyone trying to point modern fuzzing tooling at an
+older Compound-fork-style codebase.
+
 ## Roadmap
 
 - **M1 (this prototype):** FTSO chaos-mock + invariant-template pattern, proven

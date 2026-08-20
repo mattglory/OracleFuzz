@@ -1,0 +1,3 @@
+[submodule "lib/public-money-market-contracts"]
+	path = lib/public-money-market-contracts
+	url = https://github.com/kinetic-market/public-money-market-contracts
