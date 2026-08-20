@@ -76,13 +76,36 @@ through forge-std's `deployCode`, then driven entirely through low-level ABI cal
 and useful on its own for anyone trying to point modern fuzzing tooling at an
 older Compound-fork-style codebase.
 
+## M2 in progress: FDC chaos-mock
+
+- `src/mocks/FdcVerificationChaosMock.sol` — implements the real
+  `IWeb2JsonVerification` and `IPaymentVerification` interfaces (vendored
+  unmodified from Flare's official periphery package under
+  `src/interfaces/fdc/`) with a chaos-injection surface: `setVerifyResult`
+  (simulate a malformed/unverifiable proof) and `setForceRevert` (simulate the
+  FDC verification contract itself being unavailable).
+- `test/examples/PaymentCreditor.sol` / `PaymentCreditorBuggy.sol` — the same
+  correct-vs-buggy pattern as M1, this time for an on-ramp-style contract that
+  credits a balance off a verified `IPayment` attestation. The buggy version
+  checks verification but not attestation freshness - a realistic omission:
+
+  ```
+  PaymentCreditor_Correct_InvariantTest  [PASS]  (runs: 500, calls: 25000, reverts: 0)
+  PaymentCreditor_Buggy_InvariantTest    [FAIL]  shrunk to: warp(huge) -> queryCreditor(...)
+  ```
+
+Still open for M2: the remaining FDC attestation-failure modes beyond the two
+implemented here, and a second worked example.
+
 ## Roadmap
 
-- **M1 (this prototype):** FTSO chaos-mock + invariant-template pattern, proven
-  against a worked example.
-- **M2:** FDC chaos-mock (`IFdcVerification` family — start with `IWeb2Json` and
-  `IPayment`, the two most broadly used attestation types) with equivalent
-  failure-mode injection (malformed proof, wrong round, stale attestation window).
+- **M1 (complete):** FTSO chaos-mock + invariant-template pattern, proven against
+  a worked example, and against a real, live Flare protocol (Kinetic Market's
+  `ProtocolFTSOV3Oracle` - see above).
+- **M2 (in progress):** FDC chaos-mock covering `IWeb2JsonVerification` and
+  `IPaymentVerification`, proven against a worked example (above). Remaining:
+  broader failure-mode coverage (malformed-proof and forced-revert are done;
+  wrong-round handling is next) and a second worked example.
 - **M3:** Publish as a proper `forge install`-able package, worked integration
   against a second, more realistic example (a small lending or perps primitive),
   and documentation aimed at existing Flare ecosystem teams (SparkDEX, Kinetic,
